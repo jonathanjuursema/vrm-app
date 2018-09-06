@@ -4,6 +4,9 @@ This repository contains the code for a proof-of-concept visual role mining appl
 # Installation
 This application is built for `Python 3`. Dependencies are laid out in `requirements.txt`. If you want to make changes to the JavaScript, you should change the `js/matrix_visualisation.ts` TypeScript file and use TypeScript to compile a JavaScript file and place it under `static/js/matrix_visualisation.js`. You run the application by running `server.py`. This opens a webserver on `localhost:8080`. There is no authentication and no support for HTTPS, so make sure not to leave your data open to the internet.
 
+# Suggested IDE
+This application was written using PyCharm. This repository includes the right `.gitignore` and config file for automatic TypeScript 
+
 # Data
 Input files can be uploaded via the web interface. All input files use the `.csv` format. Please see the `input-examples` directory for examples of the file structure.
 
