@@ -1,0 +1,22 @@
+{% extends "../template.html" %}
+
+{% block content %}
+
+<h1 class="mt-5">Application initialisation</h1>
+
+<p class="lead">The application is currently not configured. Please start the configuration below.</p>
+
+<p>Please upload a source <code>.csv</code> file below.</p>
+
+<form action="{{ reverse_url('init') }}" method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col">
+            <input type="file" class="form-control-file" name="source-file">
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Get started!</button>
+        </div>
+    </div>
+</form>
+
+{% end %}

@@ -1,0 +1,22 @@
+{% extends "../template.html" %}
+
+{% block content %}
+
+<h1 class="mt-5">Upload meta information</h1>
+
+<p class="lead">Upload meta information file for users.</p>
+
+<p>Please upload a <code>.csv</code> file below.</p>
+
+<form action="{{ reverse_url('init_meta_user') }}" method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col">
+            <input type="file" class="form-control-file" name="source-file">
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Go!</button>
+        </div>
+    </div>
+</form>
+
+{% end %}

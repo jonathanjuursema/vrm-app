@@ -1,0 +1,38 @@
+{% extends "../template.html" %}
+
+{% block content %}
+
+<h1 class="mt-5">Identified roles</h1>
+
+<div class="row">
+
+    {% for role in roles %}
+
+    <div class="col-sm-4">
+        <div class="card" style="width: 100%; {{ '' if role['render'] else 'opacity: 0.5;' }}">
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ role['name'] }}
+                    {% if not role['render'] %}
+                        <span class="badge badge-warning">Not rendered</span>
+                    {% end %}
+                </h5>
+                <h6 class="card-subtitle mb-2 text-muted">
+                    {{ len(role['users']) }} users, {{ len(role['permissions']) }} permissions
+                </h6>
+                <a href="{{ reverse_url('delete_role', role['id']) }}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Are you sure?')">
+                    Delete
+                </a>
+                <a href="{{ reverse_url('render_role', role['id']) }}" class="btn btn-sm btn-success">
+                    {{ 'Do not render' if role['render'] else 'Render' }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% end %}
+
+</div>
+
+{% end %}

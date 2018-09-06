@@ -1,0 +1,281 @@
+{% extends "../template.html" %}
+
+{% block css %}
+
+<style type="text/css">
+
+    #matrix {
+        position: absolute;
+        top: 56px;
+        left: 0;
+        right: 0;
+        height: 90%;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    #matrix_container {
+        display: block;
+        width: 80%;
+        height: 100%;
+        -webkit-box-shadow: 0 0 20px -7px #000;
+        -moz-box-shadow: 0 0 20px -7px #000;
+        box-shadow: 0 0 20px -7px #000;
+        float: left;
+    }
+
+    #matrix_permission_label {
+        position: absolute;
+        bottom: 30px;
+        right: 21%;
+    }
+    #matrix_users_label {
+        position: absolute;
+        bottom: 40px;
+        left: -10px;
+        transform: rotate(90deg);
+    }
+
+    #matrix_canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    #matrix_meta {
+        position: relative;
+        display: block;
+        width: 20%;
+        height: 100%;
+        padding: 20px;
+        float: right;
+    }
+
+    #modal-explore {
+        max-width: 1200px !important;
+    }
+
+</style>
+
+{% end %}
+
+{% block javascript %}
+
+<script type="text/javascript" src="/static/js/matrix_visualisation.js"></script>
+
+<script type="text/javascript">
+
+    var matrix_renderer;
+
+    $(function () {
+        $.ajax({
+            url: "{{ reverse_url('visualise_api', matrix_number) }}",
+            dataType: 'json',
+            success: function (data) {
+                var matrix_data = new MatrixData(data.data, data.index, data.columns);
+                matrix_renderer = new MatrixRenderer("#matrix_container", matrix_data);
+
+                $(function () {
+                    $.ajax({
+                        url: "{{ reverse_url('visualise_api_roles') }}",
+                        dataType: 'json',
+                        success: function (data) {
+                            matrix_renderer.apply_generated_roles(data);
+                        },
+                        error: function () {
+                            $("#matrix").html("<h1>Something went wrong. Please try again.</h1>")
+                        }
+                    })
+                });
+
+                $(function () {
+                    $.ajax({
+                        url: "{{ reverse_url('visualise_meta') }}",
+                        dataType: 'json',
+                        success: function (data) {
+                            matrix_renderer.load_meta_data(data);
+                        },
+                        error: function () {
+                            $("#matrix").html("<h1>Something went wrong. Please try again.</h1>")
+                        }
+                    })
+                });
+
+                // @formatter:off
+                {% if context.overlay_up is not None %}
+                // @formatter:on
+                $(function () {
+                    $.ajax({
+                        url: "{{ reverse_url('visualise_overlay') }}",
+                        dataType: 'json',
+                        success: function (data) {
+                            matrix_renderer.apply_overlay(data.data, data.index, data.columns);
+                        },
+                        error: function () {
+                            $("#matrix").html("<h1>Something went wrong. Please try again.</h1>")
+                        }
+                    })
+                });
+                // @formatter:off
+                {% end %}
+                // @formatter:on
+
+            },
+            error: function () {
+                $("#matrix").html("<h1>Something went wrong. Please try again.</h1>")
+            }
+        })
+    });
+
+</script>
+
+{% end %}
+
+{% block full-page %}
+
+<div id="matrix">
+
+    <div id="matrix_container">
+
+    </div>
+
+    <div id='matrix_meta'>
+        <h2 id='matrix_loading'>Loading data.</h2>
+
+        <input id="matrix_save_role" type="button" class="btn btn-block btn-success" value="Save selection as role"
+               onclick="javascript:matrix_renderer.save_current_selection();">
+        <input id="matrix_show_role" type="button" class="btn btn-block btn-default" value="Explore selection"
+               onclick="javascript:matrix_renderer.explore_current_selection();">
+
+        <hr>
+
+        <p>
+            <i>Selected user:</i><br>
+            <span id="matrix_selected_user"></span>
+        </p>
+
+        <p>
+            <i>Selected permission:</i><br>
+            <span id="matrix_selected_perm"></span>
+        </p>
+
+        <div id="matrix_selection" style="display: none;">
+            <p>
+                Selection size:<br>
+                <span id="matrix_selection_size"></span>
+            </p>
+            <p id="matrix_superfluous_assignments" style="display: none;">
+                <i style="color: red;">Your selection contains superfluous assignments!</i>
+            </p>
+        </div>
+
+        <hr>
+
+        <!--
+
+        <p>
+            Using the options below, you can make changes to the <strong>original</strong> assignments.
+        </p>
+
+        <input id="matrix_deny_permissions" type="button" class="btn btn-block btn-warning"
+               value="Revoke permissions in selection"
+               onclick="javascript:matrix_renderer.revoke_current_selection();">
+
+        <input id="matrix_grant_permissions" type="button" class="btn btn-block btn-danger"
+               value="Grant permissions in selection"
+               onclick="javascript:matrix_renderer.grant_current_selection();">
+
+        <hr>
+
+        //-->
+
+        <a href="{{ reverse_url('visualise_export', matrix_number) }}" target="_blank"
+           class="btn btn-block btn-success">Download as image</a>
+
+        <div id="matrix_users_label" class="badge badge-primary">
+            <-- Users
+        </div>
+
+    </div>
+
+</div>
+
+<div id="matrix_permission_label" class="badge badge-primary">
+    <-- Permissions
+</div>
+
+<div class="modal fade" id="exploration_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div id="modal-explore" class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Explore your current selection</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <p><i>Users</i></p>
+
+                            <select multiple class="form-control" id="matrix_selection_users">
+                                <option>None...</option>
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-3">
+                            <p><i>Permissions</i></p>
+
+                            <select multiple class="form-control" id="matrix_selection_perms">
+                                <option>None...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <p><i>Superfluous assignments</i></p>
+
+                            <select multiple class="form-control" id="matrix_selection_superf">
+                                <option>None...</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div id="matrix_selection_user_meta_container" style="display: none;">
+
+                        <h4>User meta information</h4>
+
+                        <div class="row" id="matrix_selection_user_meta">
+
+                        </div>
+
+                    </div>
+
+                    <div id="matrix_selection_perm_meta_container" style="display: none;">
+
+                        <hr>
+
+                        <h4>Permission meta information</h4>
+
+                        <div class="row" id="matrix_selection_perm_meta">
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% end %}

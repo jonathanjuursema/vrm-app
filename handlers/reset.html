@@ -1,0 +1,20 @@
+{% extends "../template.html" %}
+
+{% block content %}
+
+<h1 class="mt-5">Reset application</h1>
+
+<p class="lead">You are about to clear all data from the application. Are you sure?</p>
+
+<form action="{{ reverse_url('reset') }}" method="post">
+    <div class="row">
+        <div class="col-2">
+            <a href="/" class="btn btn-danger mb-8">No, take me away!</a>
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-success mb-4">Yes</button>
+        </div>
+    </div>
+</form>
+
+{% end %}

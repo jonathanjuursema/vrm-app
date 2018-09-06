@@ -1,0 +1,9 @@
+Pillow
+numpy
+pandas
+pip
+python-dateutil
+pytz
+setuptools
+six
+tornado

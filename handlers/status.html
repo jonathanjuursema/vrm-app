@@ -1,0 +1,154 @@
+{% extends "../template.html" %}
+
+{% block content %}
+
+<h1 class="mt-5">Role mining status</h1>
+
+<p class="lead">You are currently working on a role mining project.</p>
+{% if context.stage is 5 %}
+
+<p>
+    Optimisation in progress... Please wait!<br>
+    <strong><span id="stage_percentage">{{ context.stage_percentage }}</span></strong>
+</p>
+
+{% elif context.stage >= 5 %}
+
+<p>
+    <a class="btn btn-primary" href="{{ reverse_url('visualise', 2) }}">Visualise the optimised assignment matrix.</a>
+</p>
+
+<p>
+    <a class="btn btn-warning" href="{{ reverse_url('reinit') }}">Generate new visualisation (EXTRACT + ADVISER).</a>
+</p>
+
+<p>
+    <a class="btn btn-warning" href="{{ reverse_url('readviser') }}">Generate new visualisation (ADVISER only).</a>
+</p>
+
+{% if context.overlay_up is not None %}
+<p>
+    You've uploaded an overlay.
+</p>
+{% end %}
+
+<p>
+    <a class="btn btn-primary" href="{{ reverse_url('init_overlay') }}">Upload overlay.</a>
+</p>
+
+{% if context.user_meta is not None %}
+<p>
+    You've uploaded user mate data.
+</p>
+{% end %}
+
+<p>
+    <a class="btn btn-primary" href="{{ reverse_url('init_meta_user') }}">Upload meta info for users.</a>
+</p>
+
+{% if context.permission_meta is not None %}
+<p>
+    You've uploaded permission meta data.
+</p>
+{% end %}
+
+<p>
+    <a class="btn btn-primary" href="{{ reverse_url('init_meta_permission') }}">Upload meta info for permissions.</a>
+</p>
+
+<p>
+    In this visualisation, there are still {{ context.optimised_up.values.sum() }}
+    ({{ "{0:.2f}%".format((context.optimised_up.values.sum() / context.original_up.values.sum()) * 100) }})
+    user-permission assignments to consider.
+</p>
+
+{% if context.stage >= 6 %}
+
+<h1 class="mt-5">Role identification</h1>
+
+<p>You have identified {{ len(context.generated_roles) }} proper roles.</p>
+
+<p>
+    <a class="btn btn-primary" href="{{ reverse_url('roles') }}">Manage identified roles.</a>
+</p>
+
+{% end %}
+
+{% end %}
+
+{% if context.stage >= 2 %}
+
+{% if context.stage is 3 %}
+
+<p>
+    Pseudo role generation in progress... Please wait!
+    <strong><span id="stage_percentage">{{ context.stage_percentage }}</span></strong>
+</p>
+
+{% elif context.stage > 3 %}
+
+<p>
+    {{ 0 if context.role_data is None else len(context.role_data.roles) }} pseudo roles have been generated!
+</p>
+
+{% end %}
+
+<h1 class="mt-5">Original assignment matrix</h1>
+
+<p>
+    You have loaded an assignment matrix of {{ context.original_up.shape[0] }} users and {{ context.original_up.shape[1]
+    }} permissions. In the original matrix, there are {{ context.original_up.values.sum() }} user-permission
+    assignments.
+</p>
+
+<p>
+    <a class="btn btn-primary" href="{{ reverse_url('visualise', 1) }}">Visualise the original assignment matrix.</a>
+</p>
+
+{% if context.stage == 2 %}
+
+<p>
+    <a class="btn btn-success" href="{{ reverse_url('init_algo') }}">Start processing original matrix.</a>
+</p>
+
+{% end %}
+
+{% end %}
+
+{% end %}
+
+
+{% block javascript %}
+
+{% if context.stage is 3 or context.stage is 5 %}
+
+<script type="text/javascript">
+
+    $(function () {
+
+        var old_stage = Number("{{ context.stage }}");
+
+        function check_status() {
+
+            $.ajax({
+                url: "{{ reverse_url('status_api') }}",
+                dataType: 'json',
+                success: function (data) {
+                    if (data.stage != old_stage) {
+                        window.location.reload();
+                    }
+                    $("#stage_percentage").text(data.percentage);
+                }
+            })
+
+        }
+
+        setInterval(check_status, 200);
+
+    });
+
+</script>
+
+{% end %}
+
+{% end %}
